@@ -20,8 +20,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
+	"os"
 
 	"github.com/qxip/stenographer/base"
 )
@@ -77,7 +77,7 @@ type Config struct {
 // the Config object associated with the decoded configuration data.
 func ReadConfigFile(filename string) (*Config, error) {
 	v(0, "Reading config %q", filename)
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, fmt.Errorf("could not read config file %q: %v", filename, err)
 	}
