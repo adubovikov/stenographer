@@ -16,7 +16,6 @@ package thread
 
 import (
 	"encoding/hex"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -104,7 +103,7 @@ func newRequestTest(t *testing.T, handle http.Handler) requestTest {
 }
 
 func TestExportDebugHandlers(t *testing.T) {
-	tempDir, err := ioutil.TempDir("", "")
+	tempDir, err := os.MkdirTemp("", "")
 	if err != nil {
 		t.Fatal(err)
 	}

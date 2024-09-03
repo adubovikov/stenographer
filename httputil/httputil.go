@@ -19,7 +19,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -58,18 +57,19 @@ type httpLog struct {
 
 // New returns a new ResponseWriter which provides a nice
 // String() method for easy printing.  The expected usage is:
-//   func (h *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-//     w = httputil.Log(w, r, false)
-//     defer log.Print(w)  // Prints out useful information about request AND response
-//     ... do stuff ...
-//   }
+//
+//	func (h *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+//	  w = httputil.Log(w, r, false)
+//	  defer log.Print(w)  // Prints out useful information about request AND response
+//	  ... do stuff ...
+//	}
 func Log(w http.ResponseWriter, r *http.Request, logRequestBody bool) http.ResponseWriter {
 	h := &httpLog{w: w, r: r, start: time.Now(), code: http.StatusOK}
 	if logRequestBody {
 		var buf bytes.Buffer
 		_, h.err = io.Copy(&buf, r.Body)
 		r.Body.Close()
-		r.Body = ioutil.NopCloser(&buf)
+		r.Body = io.NopCloser(&buf)
 		h.body = fmt.Sprintf(" RequestBody:%q", buf.String())
 	}
 	return h

@@ -19,7 +19,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -155,7 +155,7 @@ func (t *Thread) listPacketFilesOnDisk() (out []string) {
 	// Since indexes tend to be written after blockfiles, we list index files,
 	// then translate them back to blockfiles.  This way, we don't get spurious
 	// errors when we find blockfiles that indexes haven't been written for yet.
-	files, err := ioutil.ReadDir(t.indexPath)
+	files, err := os.ReadDir(t.indexPath)
 	if err != nil {
 		log.Printf("Thread %v could not read dir %q: %v", t.id, t.indexPath, err)
 		return nil
@@ -447,7 +447,7 @@ func (t *Thread) ExportDebugHandlers(mux *http.ServeMux) {
 			http.Error(w, "file not found", http.StatusNotFound)
 			return
 		}
-		queryBytes, err := ioutil.ReadAll(r.Body)
+		queryBytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "could not read request body", http.StatusBadRequest)
 			return

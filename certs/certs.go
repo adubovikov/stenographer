@@ -22,7 +22,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 // ClientVerifyingTLSConfig returns a TLS config which verifies that clients
@@ -30,7 +30,7 @@ import (
 func ClientVerifyingTLSConfig(certFile string) (*tls.Config, error) {
 	// Test cert file
 	var cert *x509.Certificate
-	if certBytes, err := ioutil.ReadFile(certFile); err != nil {
+	if certBytes, err := os.ReadFile(certFile); err != nil {
 		return nil, fmt.Errorf("could not read cert file: %v", err)
 	} else if block, _ := pem.Decode(certBytes); block == nil {
 		return nil, fmt.Errorf("could not get cert pem block: %v", err)

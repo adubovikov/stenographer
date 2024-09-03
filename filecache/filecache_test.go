@@ -16,14 +16,13 @@ package filecache
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 )
 
 func TestCache(t *testing.T) {
-	d, err := ioutil.TempDir("", "filecache_test")
+	d, err := os.MkdirTemp("", "filecache_test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +31,7 @@ func TestCache(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		intstr := fmt.Sprintf("%d", i)
 		paths[i] = filepath.Join(d, intstr)
-		if err := ioutil.WriteFile(paths[i], []byte(intstr), 0600); err != nil {
+		if err := os.WriteFile(paths[i], []byte(intstr), 0600); err != nil {
 			t.Fatal(err)
 		}
 	}

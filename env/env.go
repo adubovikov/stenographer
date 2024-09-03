@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -86,7 +85,7 @@ func (e *Env) handleQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	queryBytes, err := ioutil.ReadAll(r.Body)
+	queryBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "could not read request body", http.StatusBadRequest)
 		return
@@ -108,7 +107,7 @@ func New(c config.Config) (_ *Env, returnedErr error) {
 	if err := c.Validate(); err != nil {
 		return nil, err
 	}
-	dirname, err := ioutil.TempDir("", "stenographer")
+	dirname, err := os.MkdirTemp("", "stenographer")
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create temp directory: %v", err)
 	}
@@ -189,7 +188,7 @@ func (d *Env) callEvery(cb func(), freq time.Duration) {
 }
 
 func removeHiddenFilesFrom(dir string) {
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		log.Printf("Hidden file cleanup failed, could not read directory: %v", err)
 		return
@@ -208,7 +207,7 @@ func removeHiddenFilesFrom(dir string) {
 }
 
 func filesIn(dir string) (map[string]os.FileInfo, error) {
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
