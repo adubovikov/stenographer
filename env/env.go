@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -194,7 +195,8 @@ func removeHiddenFilesFrom(dir string) {
 		return
 	}
 	for _, file := range files {
-		if file.Mode().IsRegular() && strings.HasPrefix(file.Name(), ".") {
+
+		if file.Type().IsRegular() && strings.HasPrefix(file.Name(), ".") {
 			filename := filepath.Join(dir, file.Name())
 			if err := os.Remove(filename); err != nil {
 				log.Printf("Unable to remove hidden file %q: %v", filename, err)
@@ -206,14 +208,14 @@ func removeHiddenFilesFrom(dir string) {
 	}
 }
 
-func filesIn(dir string) (map[string]os.FileInfo, error) {
+func filesIn(dir string) (map[string]fs.DirEntry, error) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
-	out := map[string]os.FileInfo{}
+	out := map[string]fs.DirEntry{}
 	for _, file := range files {
-		if file.Mode().IsRegular() {
+		if file.Type().IsRegular() {
 			out[file.Name()] = file
 		}
 	}
