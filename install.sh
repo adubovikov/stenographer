@@ -21,6 +21,8 @@
 
 BINDIR="${BINDIR-/usr/bin}"
 
+. /etc/profile
+
 cd "$(dirname $0)"
 source lib.sh
 

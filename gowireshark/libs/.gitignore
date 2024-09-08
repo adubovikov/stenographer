@@ -1,0 +1,4 @@
+# .gitignore
+
+# Ignore libwireshark.so
+libs/libwireshark.so.17.0.7

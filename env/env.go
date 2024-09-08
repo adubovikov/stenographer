@@ -34,6 +34,7 @@ import (
 	"github.com/qxip/stenographer/certs"
 	"github.com/qxip/stenographer/config"
 	"github.com/qxip/stenographer/filecache"
+	"github.com/qxip/stenographer/gowireshark"
 	"github.com/qxip/stenographer/httputil"
 	"github.com/qxip/stenographer/query"
 	"github.com/qxip/stenographer/stats"
@@ -70,6 +71,8 @@ func (e *Env) Serve() error {
 		TLSConfig: tlsConfig,
 	}
 	http.HandleFunc("/query", e.handleQuery)
+	http.HandleFunc("/query/json", e.handleJsonQuery)
+
 	http.Handle("/debug/stats", stats.S)
 	return server.ListenAndServeTLS(
 		filepath.Join(e.conf.CertPath, serverCertFilename),
@@ -101,6 +104,50 @@ func (e *Env) handleQuery(w http.ResponseWriter, r *http.Request) {
 	packets := e.Lookup(ctx, q)
 	w.Header().Set("Content-Type", "application/octet-stream")
 	base.PacketsToFile(packets, w, limit)
+}
+
+func (e *Env) handleJsonQuery(w http.ResponseWriter, r *http.Request) {
+	w = httputil.Log(w, r, true)
+	defer log.Print(w)
+
+	limit, err := base.LimitFromHeaders(r.Header)
+	if err != nil {
+		http.Error(w, "Invalid Limit Headers", http.StatusBadRequest)
+		return
+	}
+
+	queryBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "could not read request body", http.StatusBadRequest)
+		return
+	}
+	q, err := query.NewQuery(string(queryBytes))
+	if err != nil {
+		http.Error(w, "could not parse query", http.StatusBadRequest)
+		return
+	}
+	ctx := httputil.Context(w, r, time.Minute*15)
+	defer ctx.Cancel()
+	packets := e.Lookup(ctx, q)
+
+	// Write all packets to a temporary file
+	tempFile, err := os.CreateTemp("", "packets_*.pcap")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer tempFile.Close()
+	base.PacketsToFile(packets, tempFile, limit)
+
+	// Read the temporary file and return the packets as JSON
+	fileName := tempFile.Name()
+	fmt.Println("Reading packets from file:", fileName)
+
+	res, err := gowireshark.GetAllFrameProtoTreeInJson(fileName, true, false)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	json.NewEncoder(w).Encode(res)
 }
 
 // New returns a new Env for use in running Stenotype.
