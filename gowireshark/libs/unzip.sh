@@ -1,4 +1,4 @@
 #!/bin/bash
 
-unzip -d *.gz
+gzip -d *.gz
 
